@@ -18,7 +18,8 @@ Build a minimal, bootable NixOS 25.05 qcow2 image suitable for upload to Contabo
 ├── flake.nix           # entry point — nixosConfigurations.contabo
 ├── flake.lock          # pinned nixpkgs 25.05
 └── modules/
-    └── contabo.nix     # NixOS configuration module
+    ├── contabo.nix     # Contabo-specific NixOS configuration (do not edit)
+    └── user.nix        # user customizations: packages, accounts, extra services
 ```
 
 The single flake output is `nixosConfigurations.contabo`. The image is produced by building:
@@ -105,9 +106,29 @@ nix build .#nixosConfigurations.contabo.config.system.build.image
 
 ---
 
+## User Customization (`modules/user.nix`)
+
+A separate module imported alongside `contabo.nix` in `flake.nix`. Ships empty by default. Users edit only this file — `contabo.nix` is never touched.
+
+Intended for:
+- `environment.systemPackages` — extra packages to bake into the image
+- `users.users` — additional user accounts
+- Any extra NixOS options or services beyond the minimal base
+
+Example content:
+```nix
+{ pkgs, ... }: {
+  environment.systemPackages = with pkgs; [
+    git
+    htop
+  ];
+}
+```
+
+---
+
 ## Out of Scope
 
 - CI/CD automated builds (can be added later)
 - Non-root user setup / hardening (post-deploy concern)
-- Additional services baked into the image
 - Copying the flake to the VPS for post-deploy `nixos-rebuild`
