@@ -24,15 +24,20 @@ Build a minimal, bootable NixOS 25.05 qcow2 image suitable for upload to Contabo
 The single flake output is `nixosConfigurations.contabo`. The image is produced by building:
 
 ```
-.#nixosConfigurations.contabo.config.system.build.qcow2
+.#nixosConfigurations.contabo.config.system.build.image
 ```
+
+`flake.nix` imports `"${nixpkgs}/nixos/modules/virtualisation/disk-image.nix"` via the NixOS module system so that `system.build.image` is available as an output.
 
 ---
 
 ## NixOS Configuration (`modules/contabo.nix`)
 
-### Bootloader
-- GRUB legacy (MBR/BIOS) — Contabo VPS uses SeaBIOS
+### Image Format
+- `image.format = "qcow2"` (default for `disk-image.nix`, stated explicitly for clarity)
+- `image.efiSupport = false` — **required**; Contabo VPS uses SeaBIOS (BIOS/MBR), not UEFI. Without this, the image builder defaults to EFI + GPT, which will not boot on Contabo.
+- Setting `image.efiSupport = false` causes the builder to install GRUB in MBR mode automatically (`boot.loader.grub.devices = [ "/dev/vda" ]`).
+- `image.baseName = "nixos"` — sets a fixed output filename (`nixos.qcow2`) rather than the default versioned name (e.g. `nixos-image-qcow2-25.05.XXXXXXX-x86_64-linux.qcow2`).
 
 ### VirtIO Drivers (required by Contabo)
 - `boot.initrd.availableKernelModules`: `virtio_scsi`, `virtio_net`, `virtio_pci`, `virtio_blk`
@@ -40,17 +45,19 @@ The single flake output is `nixosConfigurations.contabo`. The image is produced 
 ### Disk Layout
 - Single root partition, ext4
 - No swap (can be added post-deploy)
-- `diskSize`: 8 GB (qcow2 sparse; grows on VPS disk)
+- `virtualisation.diskSize = 8192` (8 GB in MiB — qcow2 is sparse; actual VPS disk is larger)
 
 ### Networking
-- `networking.useDHCP = true` — picks up DHCP from Contabo's hypervisor via the VirtIO NIC
+- `networking.useDHCP = true` — VirtIO NIC picks up DHCP from Contabo's hypervisor
+- `services.cloud-init.network.enable = false` — disables cloud-init network management to avoid conflict with dhcpcd
 
 ### SSH
 - `services.openssh.enable = true`
-- `PermitRootLogin = "yes"` (bare minimal image; harden post-deploy)
+- `services.openssh.settings.PermitRootLogin = "yes"` (bare minimal image; harden post-deploy)
 
 ### Cloud-Init
 - `services.cloud-init.enable = true`
+- `services.cloud-init.network.enable = false` (see Networking above)
 - Allows Contabo portal to inject SSH keys and hostname at first boot
 
 ---
@@ -62,7 +69,7 @@ The single flake output is `nixosConfigurations.contabo`. The image is produced 
 
 **Build command:**
 ```bash
-nix build .#nixosConfigurations.contabo.config.system.build.qcow2
+nix build .#nixosConfigurations.contabo.config.system.build.image
 # Output: ./result/nixos.qcow2
 ```
 
@@ -80,9 +87,9 @@ nix build .#nixosConfigurations.contabo.config.system.build.qcow2
 
 ## First Boot
 
-- Cloud-init injects SSH keys from Contabo portal into `/root/.ssh/authorized_keys`
-- SSH in as root
-- Run `nixos-rebuild switch --flake .#contabo` to apply further configuration changes
+- Cloud-init injects SSH keys (configured in the Contabo portal) into `/root/.ssh/authorized_keys`
+- SSH in as root: `ssh root@<vps-ip>`
+- The image is now fully operational. Further NixOS configuration (e.g. `nixos-rebuild switch`) requires copying the flake to the VPS first (`git clone` or `scp`). This is a post-deploy concern and out of scope for the initial image build.
 
 ---
 
@@ -103,3 +110,4 @@ nix build .#nixosConfigurations.contabo.config.system.build.qcow2
 - CI/CD automated builds (can be added later)
 - Non-root user setup / hardening (post-deploy concern)
 - Additional services baked into the image
+- Copying the flake to the VPS for post-deploy `nixos-rebuild`
