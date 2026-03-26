@@ -20,7 +20,7 @@ Publish the NixOS qcow2 image as a GitHub release asset with a public URL suitab
 ## Components
 
 ```
-├── modules/contabo.nix              # MODIFIED: add image.compress = true
+├── modules/contabo.nix              # unchanged (no compress option needed)
 ├── .github/
 │   └── workflows/
 │       └── build.yml                # NEW: workflow_dispatch CI
@@ -30,15 +30,21 @@ Publish the NixOS qcow2 image as a GitHub release asset with a public URL suitab
 
 ---
 
-## Required Change: `modules/contabo.nix`
+## Image Compression
 
-Add to the Image Format section:
+**Contabo constraint:** Contabo supports internal qcow2 compression only. External archive formats (`.qcow2.gz`, `.qcow2.zst`) are explicitly not supported.
 
-```nix
-image.compress = true;   # reduces ~2.1 GB to ~400–700 MB for GitHub upload
+**NixOS constraint:** `disk-image.nix` in NixOS 25.05 does not expose an `image.compress` option.
+
+**Solution:** After `nix build`, run `qemu-img convert -c -O qcow2` to produce an internally compressed copy:
+
+```bash
+qemu-img convert -c -O qcow2 result/nixos.qcow2 nixos.qcow2
 ```
 
-This is required: GitHub release assets have a 2 GB hard limit. The uncompressed image is 2.1 GB.
+This is the only format Contabo accepts that also fits under GitHub's 2 GB release asset limit (~400–700 MB compressed vs 2.1 GB uncompressed).
+
+Both the CI workflow and local script perform this conversion step before uploading.
 
 ---
 
@@ -49,14 +55,22 @@ This is required: GitHub release assets have a 2 GB hard limit. The uncompressed
 
 **Steps:**
 1. `actions/checkout` — check out the repo
-2. `cachix/install-nix-action` — install Nix with flakes enabled
-3. `cachix/cachix-action` — authenticate with cachix using `CACHIX_AUTH_TOKEN` secret; push build outputs to cache for faster future runs
-4. `nix build .#nixosConfigurations.contabo.config.system.build.image` — build the qcow2
-5. `gh release create ${{ inputs.version }} result/nixos.qcow2` — create GitHub release and upload artifact
+2. `cachix/install-nix-action` — install Nix with flakes enabled (flakes on by default in recent versions)
+3. `cachix/cachix-action` with `name: <cache-name>` and `authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}` — authenticate and push build outputs to cache
+4. `nix build .#nixosConfigurations.contabo.config.system.build.image` — build the uncompressed qcow2
+5. `nix shell nixpkgs#qemu -c qemu-img convert -c -O qcow2 result/nixos.qcow2 nixos.qcow2` — produce internally compressed qcow2
+6. `gh release create ${{ inputs.version }} nixos.qcow2 --title "NixOS ${{ inputs.version }}" --notes "NixOS 25.05 qcow2 for Contabo"`
+
+**Environment on step 6:**
+```yaml
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
 
 **Secrets required:**
 - `CACHIX_AUTH_TOKEN` — added manually in GitHub repo Settings → Secrets
-- `GITHUB_TOKEN` — built-in, no setup needed (used by `gh` CLI for release creation)
+- `CACHIX_CACHE_NAME` — the name of your cachix cache (or hardcoded in `build.yml`)
+- `GITHUB_TOKEN` — built-in, no setup needed
 
 **Output URL format:**
 ```
@@ -72,7 +86,8 @@ https://github.com/JoeRu/contabo_qcow2/releases/download/<version>/nixos.qcow2
 set -euo pipefail
 VERSION=${1:?Usage: ./scripts/release.sh <version>}
 nix build .#nixosConfigurations.contabo.config.system.build.image
-gh release create "$VERSION" result/nixos.qcow2 \
+nix shell nixpkgs#qemu -c qemu-img convert -c -O qcow2 result/nixos.qcow2 nixos.qcow2
+gh release create "$VERSION" nixos.qcow2 \
   --title "NixOS $VERSION" \
   --notes "NixOS 25.05 qcow2 for Contabo"
 echo "Upload complete. URL:"
@@ -88,8 +103,9 @@ echo "https://github.com/JoeRu/contabo_qcow2/releases/download/${VERSION}/nixos.
 1. Add GitHub remote: `git remote add origin git@github.com:JoeRu/contabo_qcow2.git`
 2. Push: `git push -u origin master`
 3. Create a cachix cache at cachix.org, obtain auth token
-4. Add `CACHIX_AUTH_TOKEN` as a GitHub repo secret (Settings → Secrets and variables → Actions)
-5. Add cachix cache name to `build.yml`
+4. Add the following GitHub repo secrets (Settings → Secrets and variables → Actions):
+   - `CACHIX_AUTH_TOKEN` — cachix authentication token
+   - Optionally `CACHIX_CACHE_NAME` — or hardcode cache name directly in `build.yml`
 
 ---
 
