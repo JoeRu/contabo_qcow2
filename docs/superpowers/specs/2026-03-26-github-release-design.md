@@ -56,7 +56,7 @@ Both the CI workflow and local script perform this conversion step before upload
 **Steps:**
 1. `actions/checkout` — check out the repo
 2. `cachix/install-nix-action` — install Nix with flakes enabled (flakes on by default in recent versions)
-3. `cachix/cachix-action` with `name: <cache-name>` and `authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}` — authenticate and push build outputs to cache
+3. `cachix/cachix-action` with `name: qcow2` and `authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}` — authenticate and push build outputs to cache
 4. `nix build .#nixosConfigurations.contabo.config.system.build.image` — build the uncompressed qcow2
 5. `nix shell nixpkgs#qemu -c qemu-img convert -c -O qcow2 result/nixos.qcow2 nixos.qcow2` — produce internally compressed qcow2
 6. `gh release create ${{ inputs.version }} nixos.qcow2 --title "NixOS ${{ inputs.version }}" --notes "NixOS 25.05 qcow2 for Contabo"`
