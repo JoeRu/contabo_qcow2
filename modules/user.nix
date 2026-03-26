@@ -8,4 +8,9 @@
     # htop
     # vim
   ];
+
+  # Fallback root password for VNC/console access.
+  # Change this after first login: passwd root
+  # To remove once SSH key access is confirmed working, delete these two lines.
+  users.users.root.initialPassword = "changeme";
 }
