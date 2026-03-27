@@ -83,10 +83,10 @@ You do **not** need to rebuild and reinstall the image for routine changes.
    ```
 3. On the VPS, pull and apply:
    ```bash
-   cd /etc/nixos
-   git pull
-   nixos-rebuild switch --flake .#contabo
+   cd /etc/nixos && git pull && nixos-update
    ```
+   `nixos-update` is a wrapper for `nixos-rebuild switch --flake /etc/nixos#contabo`.
+   It is provided by the system — no need to remember the `--flake` flag.
 
 Builds are fast because the CI populates the cachix binary cache — the VPS pulls pre-built closures instead of compiling.
 

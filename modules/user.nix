@@ -42,11 +42,22 @@ users.defaultUserShell = pkgs.zsh; # Make zsh default shell
     PROMPT="$fg[cyan]%}$USER@%{$fg[blue]%}%m ''${PROMPT}"
   '';
 
-environment.systemPackages = with pkgs; [ wget htop wget curl zsh git docker nmap sshpass lsof unzip openssl dateutils bc mutt gnupg gh unzip dig pciutils jq tmux docker-compose docker-buildx nano vim ];
+environment.systemPackages = with pkgs; [
+    wget htop curl zsh git docker nmap sshpass lsof unzip openssl
+    dateutils bc mutt gnupg gh dig pciutils jq tmux
+    docker-compose docker-buildx nano vim
+
+    # Wrapper so users never need to remember the --flake flag.
+    # Usage: nixos-update
+    # To apply changes: cd /etc/nixos && git pull && nixos-update
+    (pkgs.writeShellScriptBin "nixos-update" ''
+      exec nixos-rebuild switch --flake /etc/nixos#contabo "$@"
+    '')
+  ];
 
   # --- Welcome message (shown on SSH and console login) ---
   # Edit this block to change the message. After editing:
-  #   git push && git pull on VPS && nixos-rebuild switch --flake /etc/nixos#contabo
+  #   cd /etc/nixos && git pull && nixos-update
   users.motd = ''
 
     === NixOS on Contabo VPS ===
@@ -54,11 +65,14 @@ environment.systemPackages = with pkgs; [ wget htop wget curl zsh git docker nma
     System management: see /etc/nixos/README.md
       (auto-cloned from GitHub on first boot)
 
+    Apply config changes:
+      cd /etc/nixos && git pull && nixos-update
+
     ACTION REQUIRED on first login:
       Change the mynixos password:   passwd
       Or remove the user:
         Edit /etc/nixos/modules/user.nix -> delete users.users.mynixos
-        Then: nixos-rebuild switch --flake /etc/nixos#contabo
+        Then: nixos-update
 
     To edit this message: /etc/nixos/modules/user.nix -> users.motd
 
