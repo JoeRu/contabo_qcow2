@@ -20,10 +20,11 @@
   ];
 
   # --- Networking ---
-  # Use global DHCP so the image works regardless of NIC name (eth0, ens18, enp0s18, etc.)
-  networking.useDHCP = true;
-  # Disable cloud-init network management to avoid conflict with dhcpcd
-  services.cloud-init.network.enable = false;
+  # Contabo delivers network config (IP, gateway) via cloud-init from the NoCloud
+  # seed on /dev/sr0 — not via DHCP. Let cloud-init configure the interface and
+  # disable dhcpcd to prevent it from overwriting the cloud-init-assigned address.
+  networking.useDHCP = false;
+  services.cloud-init.network.enable = true;
 
   # --- SSH ---
   services.openssh.enable = true;
@@ -39,5 +40,5 @@
   # Default: US layout. Switch to German at runtime: loadkeys de
   console.keyMap = "us";
 
-  system.stateVersion = "25.05";
+  system.stateVersion = "25.11";
 }
