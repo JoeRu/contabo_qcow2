@@ -15,7 +15,7 @@ nix shell nixpkgs#qemu -c qemu-img convert -c -O qcow2 result/nixos.qcow2 nixos.
 echo "==> Creating GitHub release ${VERSION}..."
 gh release create "${VERSION}" nixos.qcow2 \
   --title "NixOS ${VERSION}" \
-  --notes "NixOS 25.05 qcow2 image for Contabo VPS"
+  --notes "NixOS 25.11 qcow2 image for Contabo VPS"
 
 echo ""
 echo "Done. Contabo upload URL:"

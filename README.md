@@ -1,6 +1,6 @@
 # contabo_qcow2
 
-Nix flake that builds a minimal NixOS 25.05 qcow2 image ready to upload to [Contabo](https://contabo.com) via their Custom Images feature.
+Nix flake that builds a minimal NixOS 25.11 qcow2 image ready to upload to [Contabo](https://contabo.com) via their Custom Images feature.
 
 ## Prerequisites
 
@@ -62,7 +62,7 @@ https://github.com/JoeRu/contabo_qcow2/releases/download/<version>/nixos.qcow2
 2. Navigate to your VPS → Custom Images (add-on required)
 3. **Add your SSH public key** in the portal — cloud-init injects it at first boot
 4. Upload via URL: `https://github.com/JoeRu/contabo_qcow2/releases/download/<version>/nixos.qcow2`
-5. OS type: **Linux** / version: **NixOS 25.05**
+5. OS type: **Linux** / version: **NixOS 25.11**
 6. Enable the **Cloud-Init toggle**
 7. Reinstall the VPS
 8. SSH in: `ssh mynixos@<vps-ip>`

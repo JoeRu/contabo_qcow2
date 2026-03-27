@@ -40,6 +40,6 @@ jobs:
         run: |
           gh release create "${{ inputs.version }}" nixos.qcow2 \
             --title "NixOS ${{ inputs.version }}" \
-            --notes "NixOS 25.05 qcow2 image for Contabo VPS"
+            --notes "NixOS 25.11 qcow2 image for Contabo VPS"
           echo "Contabo upload URL:"
           echo "https://github.com/JoeRu/contabo_qcow2/releases/download/${{ inputs.version }}/nixos.qcow2"
