@@ -99,6 +99,26 @@ environment.systemPackages = with pkgs; [
     };
   };
 
+  # --- Per-user .zshrc skeleton ---
+  # Created on first activation; never overwritten so users can edit freely.
+  # System-wide zsh settings (oh-my-zsh, prompt) live in /etc/zshrc.
+  system.activationScripts.zshrcSkeleton = {
+    deps = [];
+    text = ''
+      for home in /home/admin /root; do
+        if [ ! -f "$home/.zshrc" ]; then
+          mkdir -p "$home"
+          cat > "$home/.zshrc" << 'ZSHRC'
+# ~/.zshrc — per-user zsh config
+# This file is yours to edit. It will not be overwritten by nixos-update.
+# System-wide settings (oh-my-zsh, prompt, packages) are in /etc/zshrc.
+ZSHRC
+          chown --reference="$home" "$home/.zshrc" 2>/dev/null || true
+        fi
+      done
+    '';
+  };
+
   # Default user — cloud-init targets this account for password/SSH key injection.
   # "admin" matches Contabo's expected default_user name.
   # Fallback password is for VNC access only — cloud-init overrides at first boot.
