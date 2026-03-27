@@ -52,8 +52,8 @@ environment.systemPackages = with pkgs; [
     # Usage: nixos-update
     # To apply changes: cd /etc/nixos && git pull && nixos-update
     (pkgs.writeShellScriptBin "nixos-update" ''
-      exec nixos-rebuild switch --flake /etc/nixos#contabo \
-        --extra-experimental-features 'nix-command flakes' "$@"
+      export NIX_CONFIG="experimental-features = nix-command flakes"
+      exec nixos-rebuild switch --flake /etc/nixos#contabo "$@"
     '')
   ];
 
