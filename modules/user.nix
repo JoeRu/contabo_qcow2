@@ -45,23 +45,43 @@ users.defaultUserShell = pkgs.zsh; # Make zsh default shell
 environment.systemPackages = with pkgs; [ wget htop wget curl zsh git docker nmap sshpass lsof unzip openssl dateutils bc mutt gnupg gh unzip dig pciutils jq tmux docker-compose docker-buildx nano vim ];
 
   # --- Welcome message (shown on SSH and console login) ---
-  # Edit this block to change the message shown at login.
-  # After editing: rebuild and redeploy a new image version.
+  # Edit this block to change the message. After editing:
+  #   git push && git pull on VPS && nixos-rebuild switch --flake /etc/nixos#contabo
   users.motd = ''
 
     === NixOS on Contabo VPS ===
 
+    System management: see /etc/nixos/README.md
+      (auto-cloned from GitHub on first boot)
+
     ACTION REQUIRED on first login:
       Change the mynixos password:   passwd
-      Or remove the user entirely:
-        1. Edit modules/user.nix in your local repo
-        2. Delete the users.users.mynixos block
-        3. Rebuild and redeploy the image
+      Or remove the user:
+        Edit /etc/nixos/modules/user.nix -> delete users.users.mynixos
+        Then: nixos-rebuild switch --flake /etc/nixos#contabo
 
-    To edit this message:
-      modules/user.nix -> users.motd
+    To edit this message: /etc/nixos/modules/user.nix -> users.motd
 
   '';
+
+  # --- First-boot: clone the NixOS config repo to /etc/nixos ---
+  # Runs once after cloud-init has configured the network.
+  # Change the URL below if you fork this repository.
+  systemd.services.setup-nixos-config = {
+    description = "Clone NixOS flake config to /etc/nixos on first boot";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network-online.target" "cloud-init.service" ];
+    wants = [ "network-online.target" ];
+    unitConfig.ConditionPathExists = "!/etc/nixos/flake.nix";
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = pkgs.writeShellScript "setup-nixos-config" ''
+        ${pkgs.git}/bin/git clone https://github.com/JoeRu/contabo_qcow2.git /etc/nixos
+        echo "NixOS config cloned to /etc/nixos"
+      '';
+    };
+  };
 
   # Fallback user for VNC/console access.
   users.users.mynixos = {

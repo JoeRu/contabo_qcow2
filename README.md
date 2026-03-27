@@ -65,7 +65,53 @@ https://github.com/JoeRu/contabo_qcow2/releases/download/<version>/nixos.qcow2
 5. OS type: **Linux** / version: **NixOS 25.05**
 6. Enable the **Cloud-Init toggle**
 7. Reinstall the VPS
-8. SSH in: `ssh root@<vps-ip>`
+8. SSH in: `ssh mynixos@<vps-ip>`
+
+## Managing the Installed System
+
+At first boot the system automatically clones this repository to `/etc/nixos`.
+You do **not** need to rebuild and reinstall the image for routine changes.
+
+### Day-to-day changes (non-destructive)
+
+1. Edit `modules/user.nix` locally (packages, users, services, MOTD)
+2. Commit and push:
+   ```bash
+   git add modules/user.nix
+   git commit -m "..."
+   git push
+   ```
+3. On the VPS, pull and apply:
+   ```bash
+   cd /etc/nixos
+   git pull
+   nixos-rebuild switch --flake .#contabo
+   ```
+
+Builds are fast because the CI populates the cachix binary cache — the VPS pulls pre-built closures instead of compiling.
+
+### When to rebuild and reinstall the image
+
+Rebuild the image (GitHub Actions → new release → Contabo reinstall) only for changes that affect boot or hardware configuration:
+
+- `modules/contabo.nix` (kernel modules, boot loader, disk layout)
+- Disk size (`virtualisation.diskSize`)
+- Cloud-init network config
+
+**Note:** Reinstalling via Contabo wipes the disk. Back up any data first.
+
+### Fork this repository
+
+If you fork this repo, update the clone URL in `modules/user.nix`:
+
+```nix
+systemd.services.setup-nixos-config = {
+  ...
+  ExecStart = pkgs.writeShellScript "setup-nixos-config" ''
+    git clone https://github.com/YOUR_USER/YOUR_REPO.git /etc/nixos
+  '';
+};
+```
 
 ## Repository Setup (one-time)
 
