@@ -33,6 +33,17 @@
   # --- Cloud-init: Contabo injects SSH keys at first boot ---
   services.cloud-init.enable = true;
 
+  # Tell cloud-init's set_passwords module which user to target.
+  # Without this, it warns "no default or defined user" and skips password injection.
+  services.cloud-init.settings = {
+    system_info = {
+      default_user = {
+        name = "root";
+        lock_passwd = false;
+      };
+    };
+  };
+
   # Required: set a hostname (cloud-init may override at first boot)
   networking.hostName = "contabo";
 
