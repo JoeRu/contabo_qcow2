@@ -71,9 +71,9 @@ environment.systemPackages = with pkgs; [
       cd /etc/nixos && git pull && nixos-update
 
     ACTION REQUIRED on first login:
-      Change the mynixos password:   passwd
+      Change the admin password:   passwd
       Or remove the user:
-        Edit /etc/nixos/modules/user.nix -> delete users.users.mynixos
+        Edit /etc/nixos/modules/user.nix -> delete users.users.admin
         Then: nixos-update
 
     To edit this message: /etc/nixos/modules/user.nix -> users.motd
@@ -99,12 +99,12 @@ environment.systemPackages = with pkgs; [
     };
   };
 
-  # Fallback user for VNC/console access.
-  users.users.mynixos = {
+  # Default user — cloud-init targets this account for password/SSH key injection.
+  # "admin" matches Contabo's expected default_user name.
+  # Fallback password is for VNC access only — cloud-init overrides at first boot.
+  users.users.admin = {
     isNormalUser = true;
     extraGroups = [ "wheel" ];
-    # Cloud-init overrides this at first boot with the password set in the Contabo portal.
-    # This is a fallback for VNC access only — change it after first login.
     initialPassword = "XchangeMe!";
   };
 }

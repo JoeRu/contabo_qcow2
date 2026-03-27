@@ -38,7 +38,7 @@
   services.cloud-init.settings = {
     system_info = {
       default_user = {
-        name = "mynixos";
+        name = "admin";
         lock_passwd = false;
       };
     };

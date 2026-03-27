@@ -65,7 +65,7 @@ https://github.com/JoeRu/contabo_qcow2/releases/download/<version>/nixos.qcow2
 5. OS type: **Linux** / version: **NixOS 25.11**
 6. Enable the **Cloud-Init toggle**
 7. Reinstall the VPS
-8. SSH in: `ssh mynixos@<vps-ip>`
+8. SSH in: `ssh admin@<vps-ip>`
 
 ## Managing the Installed System
 
