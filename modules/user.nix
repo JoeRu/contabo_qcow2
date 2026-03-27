@@ -19,6 +19,7 @@ programs.tmux.enable = true;
    };
 
 
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nix.settings.auto-optimise-store = true;
   # Garbage Collection
   nix.gc = {
@@ -51,7 +52,8 @@ environment.systemPackages = with pkgs; [
     # Usage: nixos-update
     # To apply changes: cd /etc/nixos && git pull && nixos-update
     (pkgs.writeShellScriptBin "nixos-update" ''
-      exec nixos-rebuild switch --flake /etc/nixos#contabo "$@"
+      exec nixos-rebuild switch --flake /etc/nixos#contabo \
+        --extra-experimental-features 'nix-command flakes' "$@"
     '')
   ];
 
