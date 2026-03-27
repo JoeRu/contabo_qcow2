@@ -13,4 +13,11 @@
   # Change this after first login: passwd root
   # To remove once SSH key access is confirmed working, delete these two lines.
   users.users.root.initialPassword = "changeme!";
+
+  # Fallback user for VNC/console access.
+  users.users.mynixos = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" ];
+    initialPassword = "XchangeMe!";
+  };
 }
