@@ -35,5 +35,9 @@
   # Required: set a hostname (cloud-init may override at first boot)
   networking.hostName = "contabo";
 
+  # --- Console keyboard ---
+  # Default: US layout. Switch to German at runtime: loadkeys de
+  console.keyMap = "us";
+
   system.stateVersion = "25.05";
 }
