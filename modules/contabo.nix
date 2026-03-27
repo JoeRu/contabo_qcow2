@@ -20,9 +20,8 @@
   ];
 
   # --- Networking ---
-  # Contabo VirtIO NIC is ens18. Global useDHCP is deprecated since NixOS 22.05.
-  networking.useDHCP = false;
-  networking.interfaces.ens18.useDHCP = true;
+  # Use global DHCP so the image works regardless of NIC name (eth0, ens18, enp0s18, etc.)
+  networking.useDHCP = true;
   # Disable cloud-init network management to avoid conflict with dhcpcd
   services.cloud-init.network.enable = false;
 
