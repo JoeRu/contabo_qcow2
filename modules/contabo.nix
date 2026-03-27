@@ -28,7 +28,7 @@
 
   # --- SSH ---
   services.openssh.enable = true;
-  services.openssh.settings.PermitRootLogin = "yes";
+  services.openssh.settings.PermitRootLogin = "prohibit-password";
 
   # --- Cloud-init: Contabo injects SSH keys at first boot ---
   services.cloud-init.enable = true;
@@ -38,7 +38,7 @@
   services.cloud-init.settings = {
     system_info = {
       default_user = {
-        name = "root";
+        name = "mynixos";
         lock_passwd = false;
       };
     };
