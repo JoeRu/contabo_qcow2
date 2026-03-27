@@ -33,9 +33,12 @@
   # --- Cloud-init: Contabo injects SSH keys at first boot ---
   services.cloud-init.enable = true;
 
-  # Tell cloud-init's set_passwords module which user to target.
-  # Without this, it warns "no default or defined user" and skips password injection.
+  # NixOS defaults cloud-init users to [root] only.
+  # Adding "default" tells cloud-init to also process the default_user (admin),
+  # which allows set_passwords to apply the Contabo portal password to admin.
+  # Without "default" in this list, set_passwords warns "no default or defined user".
   services.cloud-init.settings = {
+    users = [ "default" "root" ];
     system_info = {
       default_user = {
         name = "admin";
