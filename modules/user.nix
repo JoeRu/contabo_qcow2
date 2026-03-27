@@ -119,6 +119,34 @@ ZSHRC
     '';
   };
 
+  # ---------------------------------------------------------------------------
+  # SECURITY: Firewall (uncomment to enable)
+  # Blocks all inbound traffic except SSH. Add ports as needed.
+  # ---------------------------------------------------------------------------
+  # networking.firewall.enable = true;
+  # networking.firewall.allowedTCPPorts = [
+  #   22    # SSH
+  #   # 80  # HTTP
+  #   # 443 # HTTPS
+  # ];
+
+  # ---------------------------------------------------------------------------
+  # SECURITY: fail2ban (uncomment to enable)
+  # Bans IPs with repeated SSH login failures. Requires firewall to be enabled.
+  # Default: ban after 5 failures for 10 minutes.
+  # ---------------------------------------------------------------------------
+  # services.fail2ban.enable = true;
+  # services.fail2ban.maxretry = 5;
+  # services.fail2ban.bantime = "10m";
+  # services.fail2ban.jails.sshd = {
+  #   settings = {
+  #     enabled  = true;
+  #     port     = "ssh";
+  #     filter   = "sshd";
+  #     maxretry = 5;
+  #   };
+  # };
+
   # Default user — cloud-init targets this account for password/SSH key injection.
   # "admin" matches Contabo's expected default_user name.
   # Fallback password is for VNC access only — cloud-init overrides at first boot.
