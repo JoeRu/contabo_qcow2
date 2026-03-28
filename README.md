@@ -1,6 +1,9 @@
-# contabo_qcow2
+# NixOS minimal image qcow2-Format - for use in Contabo and other hyperscalers supporting qcow2 Format
 
 Nix flake that builds a minimal NixOS 25.11 qcow2 image ready to upload to [Contabo](https://contabo.com) via their Custom Images feature.
+
+**!Attention!**
+If you didn't setup the password in the UI - the system is delivered with a default account (admin) and Password (look into [modules/user.nix](https://github.com/JoeRu/NixOS-qcow2-Image/blob/master/modules/user.nix))! SET Password or DELETE the User immidiatly! 
 
 ## Prerequisites
 
